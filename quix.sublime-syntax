@@ -1,0 +1,90 @@
+%YAML 1.2
+---
+
+name: Quix
+file_extensions: [quix, quix.txt]
+scope: source.quix
+
+# variables:
+
+contexts:
+
+  main:
+  - include: line_comment
+  - include: doc_comment
+  - include: kill_defaults
+  - include: command
+  - include: illegal_to_eol
+
+  prototype:
+  - include: whitespace
+
+  whitespace:
+  - match: '\s+'
+
+  line_comment:
+  - match: '[>].*$'
+    scope: comment.line.quix
+
+  doc_comment:
+  - match: '@'
+    scope: comment.block.documentation.quix
+    push: doc_to_eol_POP
+
+  kill_defaults:
+  - match: '#kill-defaults'
+    scope: keyword.other.quix
+
+  command:
+  - match: '[a-zA-Z0-9]+\b|\*'
+    scope: entity.name.function
+    push:
+    - doc_to_eol_POP
+    - REQ_url_POP
+
+  doc_to_eol_POP:
+  - match: ''
+    set:
+    - doc_METASCOPE_POP
+    - html_to_eol_POP
+
+  doc_METASCOPE_POP:
+  - meta_scope: comment.block.documentation.quix
+  - match: ''
+    pop: true
+
+  html_to_eol_POP:
+  - match: ''
+    set: Packages/HTML/HTML.sublime-syntax
+    with_prototype:
+    - match: '$'
+      pop: true
+
+  REQ_url_POP:
+  - match: '[a-zA-Z]+:'
+    scope: keyword.other.quix
+    set:
+    - url_METASCOPE_POP
+    - url_content_POP
+  - include: illegal_to_eol_POP
+
+  url_METASCOPE_POP:
+  - meta_scope: string.unquoted.magma
+  - match: ''
+    pop: true
+
+  url_content_POP:
+  - meta_include_prototype: false
+  - match: '%(s_|rs|s|r|d|t)'
+    scope: keyword.other.quix
+  - match: '(?=\s|$)'
+    pop: true
+
+  illegal_to_eol:
+  - match: '(?=.)'
+    push: illegal_to_eol_POP
+
+  illegal_to_eol_POP:
+  - match: '.*$'
+    scope: invalid.illegal.quix
+    pop: true
